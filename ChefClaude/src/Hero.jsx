@@ -1,7 +1,9 @@
 import { useState } from "react";
 import ClaudeRecipe from "./components/ClaudeRecipe";
 import IngredientsList from "./components/IngredientsList";
-import {getRecipeFromChefClaude,getRecipeFromMistral} from "./ChefAI"
+import { getRecipeFromChefClaude, getRecipeFromMistral } from "./ChefAI";
+import { useRef } from "react";
+import { useEffect } from "react";
 
 export default function Hero() {
   const [ingredients, setIngredients] = useState([
@@ -11,6 +13,7 @@ export default function Hero() {
     "Main Spices",
   ]);
   const [recipe, setRecipe] = useState("");
+  const recipeSection = useRef(null);
 
   function addIngredient(formData) {
     // const formData=new FormData(event.currentTarget);
@@ -18,11 +21,19 @@ export default function Hero() {
     setIngredients([...ingredients, newIngredient]); // OR setIngredients(prevIngredients=>[...prevIngredients,newIngredient])
   }
 
-  async function getRecipe(){
+  async function getRecipe() {
     // getRecipeFromChefClaude(ingredients).then(...)
-    const recipeMd=await getRecipeFromChefClaude(ingredients)
-    setRecipe(recipeMd)
+    const recipeMd = await getRecipeFromChefClaude(ingredients);
+    setRecipe(recipeMd);
   }
+
+  useEffect(() => {
+    if (recipe !== "" && recipeSection.current !== null) {
+      recipeSection.current.scrollIntoView({behavior: "smooth"});
+      // const yCoord = recipeSection.current.getBoundingClientRect().top + window.scrollY;
+      // window.scroll({top:yCoord,behavior:"smooth"});
+    }
+  }, [recipe]);
 
   return (
     <main>
@@ -38,8 +49,14 @@ export default function Hero() {
         />
         <button>Add Ingredient</button>
       </form>
-      {ingredients.length > 0 && <IngredientsList ingredients={ingredients} getRecipe={getRecipe} /> }
-      {recipe && <ClaudeRecipe recipe={recipe}/>}
+      {ingredients.length > 0 && (
+        <IngredientsList
+          ref={recipeSection}
+          ingredients={ingredients}
+          getRecipe={getRecipe}
+        />
+      )}
+      {recipe && <ClaudeRecipe recipe={recipe} />}
     </main>
   );
 }
